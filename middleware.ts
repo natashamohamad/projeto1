@@ -1,54 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
-// LOCAL TEST PARAM
-const localTestParam = 'JSvEyAogeImhnLAP';
-
-// PARAM LIST
-const paramList: Record<string, string> = {
-  'Zkxidj6qY8JKKyK': 'new', // LEGACY CAT PARAM
-  'KPTSqxgasIkXDoN': 'new',
-};
-
-export function middleware(req: NextRequest) {
+// Middleware simplificado para evitar qualquer erro de execução.
+// Se quiser, depois voltamos a adicionar a lógica de parâmetros/cookies.
+export function middleware(_req: NextRequest) {
   try {
-    const { nextUrl } = req;
-    const url = nextUrl.toString() || '';
-    const host = nextUrl.hostname.toLowerCase() || '';
-    const params = nextUrl.searchParams;
-    const catParam = params.get('xcat') || params.get('cat') || ''; // LEGACY CAT PARAM
-    const localParam = params.get('xtest') || '';
-    const requestHeaders = new Headers(req.headers);
-
-    requestHeaders.set('x-url', url);
-    requestHeaders.set('x-host', host);
-    requestHeaders.set('x-params', params.toString());
-    requestHeaders.set('x-cat-param', catParam);
-
-    if (localParam === localTestParam) {
-      requestHeaders.set('x-local-param', 'true');
-    }
-
-    if (catParam && paramList[catParam]) {
-      const redirectParams = new URLSearchParams(params.toString());
-      redirectParams.delete('cat');
-      redirectParams.delete('xcat');
-      const newUrl = req.nextUrl.clone();
-      newUrl.search = redirectParams.toString();
-
-      const response = NextResponse.redirect(newUrl, { status: 302 });
-      response.cookies.set({
-        name: 'xcat_valid',
-        value: paramList[catParam],
-        path: '/',
-        maxAge: 60 * 60 * 72,
-        httpOnly: false,
-      });
-      return response;
-    }
-
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    });
+    return NextResponse.next();
   } catch (error) {
     console.error('[middleware]', error);
     return NextResponse.next();
@@ -56,7 +13,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };
